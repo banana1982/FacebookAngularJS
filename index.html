@@ -27,87 +27,141 @@
          js.src = "https://connect.facebook.net/en_US/sdk.js";
          fjs.parentNode.insertBefore(js, fjs);
        }(document, 'script', 'facebook-jssdk'));
-
-        myApp.controller('myCtrl', ['$scope', function($scope){
+       myApp.factory('facebookService', function($q) {
+            return {
+                getMyLastName: function() {
+                    var deferred = $q.defer();
+                    FB.api('/me', {
+                        fields: 'last_name'
+                    }, function(response) {
+                        if (!response || response.error) {
+                            deferred.reject('Error occured');
+                        } else {
+                            deferred.resolve(response);
+                        }
+                    });
+                    return deferred.promise;
+                },
+                FBLogin: function(){
+                    var deferred = $q.defer();
+                    FB.login(function(response) {
+                        if (response.authResponse) {
+                            console.log('Welcome!  Fetching your information.... ');
+                            FB.api('/me', function(response) {
+                            console.log('Good to see you, ' + response.name + '.');
+                            deferred.resolve(response);
+                        });
+                        } else {
+                            console.log('User cancelled login or did not fully authorize.');
+                            deferred.reject('Có lỗi phát sinh....');
+                        }
+                    });
+                    return deferred.promise;
+                },
+                FBLogout : function(){
+                    var deferred = $q.defer();
+                    FB.logout(function(response) {
+                    // user is now logged out
+                        console.log('Welcome!  Fetching your information.... ');
+                        deferred.resolve(response);
+                    });
+                    return deferred.promise;
+                },
+                getPageInfo : function(){
+                    var deferred = $q.defer();
+                    FB.Canvas.getPageInfo(
+                        function(info) {
+                            console.log(info);
+                            deferred.resolve(info);
+                        }
+                    );
+                    return deferred.promise;
+                },
+                checkLoginStatus : function(){
+                    var deferred = $q.defer();
+                    var check = false;
+                    var uid = '';
+                    var accessToken = '';
+                    var result = {
+                        status:check,
+                        uid:uid,
+                        accessToken:accessToken
+                    };
+                    FB.getLoginStatus(function(response) {
+                    if (response.status === 'connected') {
+                        // the user is logged in and has authenticated your
+                        // app, and response.authResponse supplies
+                        // the user's ID, a valid access token, a signed
+                        // request, and the time the access token 
+                        // and signed request each expire
+                        uid = response.authResponse.userID;
+                        accessToken = response.authResponse.accessToken;
+                        check = true;
+                        console.log(check + "ok");
+                        console.log(uid + ' - ' + accessToken);
+                        deferred.resolve(response);
+                    } else if (response.status === 'not_authorized') {
+                        // the user is logged in to Facebook, 
+                        // but has not authenticated your app
+                        check = false;
+                        console.log(check + "fail 1");
+                        deferred.reject('Error occured');
+                    } else {
+                        // the user isn't logged in to Facebook.
+                        // $scope.checkLogin = false;
+                        check = false;
+                        console.log(check + "fail 2");
+                        deferred.reject('Login failed');
+                    }
+                    });
+                    return deferred.promise;
+                }
+            };    
+        });
+        myApp.controller('myCtrl', ['$scope', 'facebookService', function($scope, facebookService){
             $scope.checkLogin = true;
             $scope.FBName = '';
             $scope.btnLogin = "Login";
             $scope.btnLogout = "Logout";
             // $scope.check = facebook.checkLoginStatus();
-            $scope.checkLoginStatus = function(){
-                var check = false;
-                var uid = '';
-                var accessToken = '';
-                FB.getLoginStatus(function(response) {
-                  if (response.status === 'connected') {
-                    // the user is logged in and has authenticated your
-                    // app, and response.authResponse supplies
-                    // the user's ID, a valid access token, a signed
-                    // request, and the time the access token 
-                    // and signed request each expire
-                    uid = response.authResponse.userID;
-                    accessToken = response.authResponse.accessToken;
-                    check = true;
-                    console.log(check + "ok");
-                  } else if (response.status === 'not_authorized') {
-                    // the user is logged in to Facebook, 
-                    // but has not authenticated your app
-                    check = false;
-                    console.log(check + "fail 1");
-                  } else {
-                    // the user isn't logged in to Facebook.
-                    // $scope.checkLogin = false;
-                    check = false;
-                    console.log(check + "fail 2");
-                  }
-                });
-                console.log(check + "final");
-                if (check) {
-                    $scope.checkLogin = true;
-                }else{
-                    $scope.checkLogin = false;
-                }
-            };
-            $scope.FBLogin = function(){
-                FB.login(function(response) {
-                    if (response.authResponse) {
-                     console.log('Welcome!  Fetching your information.... ');
-                     FB.api('/me', function(response) {
-                       console.log('Good to see you, ' + response.name + '.');
-                       var log = response;
-                       $scope.FBName = 'Chào ' + response.name;
-                       $scope.checkLogin = false;
-                       console.log(log);
-                     });
-                    } else {
-                     console.log('User cancelled login or did not fully authorize.');
-                     $scope.checkLogin = true;
-                     $scope.FBName = 'Có lỗi phát sinh....';
-                    }
-                });
-            };
-            $scope.getPageInfo = function(){
-                FB.Canvas.getPageInfo(
-                    function(info) {
-                        alert('Width: ' + info.clientWidth + ' Height: ' + info.clientHeight);
+            $scope.getMyLastName = function() {
+                facebookService.getMyLastName() 
+                    .then(function(response) {
+                    $scope.last_name = response.last_name;
                     }
                 );
             };
+            $scope.checkLoginStatus = function(){
+                facebookService.checkLoginStatus().then(function(response){
+                    // $scope.statusLogin = response.result.status;
+                    console.log(response);
+                });
+            };
+            $scope.FBLogin = function(){
+                facebookService.FBLogin().then(function(response){
+                    $scope.FBName = response.name;
+                });
+            };
+            $scope.getPageInfo = function(){
+                facebookService.FBLogin().then(function(response){
+                    // $scope.FBName = response.name;
+                });
+            };
 
             $scope.FBLogout = function(){
-                FB.logout(function(response) {
-                  // user is now logged out
-                  $scope.checkLogin = false;
+                facebookService.FBLogout().then(function(response){
+                    $scope.FBName = "Logout";
                 });
             };
         }]);
 </script>
     <div ng-controller="myCtrl">
-        <h1>{{ FBName }}</h1>
+        <h1>{{ last_name }}{{ FBName }} {{ statusLogin }}</h1>
         <button ng-click="checkLoginStatus()">Check</button>
         <button ng-click="FBLogin()">{{ btnLogin }}</button>
         <button ng-click="FBLogout()">{{ btnLogout }}</button>
-        <button ng-click="getPageInfo()">Page info</button>
+        <button ng-click="getMyLastName ()">Page info</button>
+
     </div>
 </body>
 </html>
