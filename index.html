@@ -2,7 +2,22 @@
 <html ng-app="myApp">
 <head>
     <title>Page Title</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <style>
+        .row {
+            padding:10px;
+        }
+        .panel {
+            padding: 20px;
+            height:60px;
+        }
+    </style>
 </head>
 <body>
      <script type="text/javascript">
@@ -68,11 +83,22 @@
                             scope: 'pages_show_list',
                             auth_type: 'request'
                     }, function(response) {
-                        console.log(response);
+                        // console.log(response);
                         if (!response || response.error) {
-                            deferred.reject('Error occured');
+                            var pages = {
+                                status:false,
+                                message:"GET_LIST_PAGE_ERROR",
+                                details: response.error
+                            };
+                            deferred.resolve(pages);
                         } else {
-                            deferred.resolve(response);
+                            var pages = {
+                                status:true,
+                                message:"GET_LIST_PAGE_SUCCESSFUL",
+                                data: response.data,
+                                paging:response.paging
+                            };
+                            deferred.resolve(pages);
                         }
                     });
                     return deferred.promise;
@@ -179,6 +205,8 @@
             $scope.FBId = "";
             $scope.btnLogin = "Login";
             $scope.btnLogout = "Logout";
+            $scope.listPage = [];
+            $scope.hiddened = "";
             $scope.checkLoginStatus = function(){
                 facebookService.checkLoginStatus().then(function(response){
                     $scope.statusLogin = response.status;
@@ -197,6 +225,10 @@
                             facebookService.getPictureProfile(ID).then(function(response){
                                 $scope.imgProfileUrl = response.data.url; 
                             });
+                            facebookService.getPagesList().then(function(response){
+                                $scope.listPage = response.data;
+                                $scope.checkLogin = false;
+                            });
                         }
                         else{
                             $scope.FBName = "Chưa đăng nhập";
@@ -208,20 +240,21 @@
                         $scope.checkLogin = false;
                     }
                 });
-                if($scope.FBName !== ""){
-                    $scope.checkLogin = true;
-                }else{
-                    $scope.checkLogin = false;
-                }
             };
             $scope.getPagesList = function(){
                 facebookService.getPagesList().then(function(response){
+                    console.log(response);
+                    $scope.listPage = response.data;
+                    console.log($scope.listPage);
                 });
             };
 
             $scope.FBLogout = function(){
                 facebookService.FBLogout().then(function(response){
                     $scope.FBName = "Logout";
+                    $scope.FBId = "";
+                    $scope.hiddened = "hidden";
+                    $scope.listPage = [];
                 });
             };
 
@@ -245,19 +278,46 @@
         }]);
 </script>
     <div ng-controller="myCtrl">
-        <div>
-            <h1 style="padding:5px;"><span><img class="reponsive" src='{{ imgProfileUrl }}' alt="Profile image"></span>{{ FBName }}</h1>
-        </div>
-        <h4>{{ FBId }}</h4>
-        <button ng-click="FBLogin()" ng-show="{{ !statusLogin }}">{{ btnLogin }}</button>
-        <button ng-click="FBLogout()" ng-show="{{ checkLogin }}">{{ btnLogout }}</button>
-        <button ng-click="checkLoginStatus()">Check</button>
-        <button ng-click="getPageTab()">Get Page</button>
-        <button ng-click="getPagesList()">Get List Page</button>
-        <button ng-click="getPictureProfile()" ng-show="false">Get Profile Picture</button>
-        <!-- <button ng-click="getAssignPage()" >Get Assigned Page</button> -->
-        <div>
-
+        <div class="container">
+            <div class="row">
+                <h1 style="padding:auto;"><span><img class="reponsive" src='{{ imgProfileUrl }}'></span> {{ FBName }}</h1>
+            </div>
+            <div class="row">
+                <h4>{{ FBId }}</h4>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <button class="btn btn-default " ng-click="FBLogin()" ng-disabled="{{ checkLogin }}">{{ btnLogin }}</button>
+                    <button class="btn btn-danger" ng-click="FBLogout()" ng-disabled="{{ checkLogin }}">{{ btnLogout }}</button>
+                    <button class="btn btn-info" ng-click="checkLoginStatus()">Check</button>
+                    <button class="btn btn-default" ng-click="getPageTab()">Get Page</button>
+                    <button class="btn btn-success" ng-click="getPagesList()">Get List Page</button>
+                    <button class="btn btn-warning" ng-click="getPictureProfile()" ng-show="false">Get Profile Picture</button>
+                    <!-- <button ng-click="getAssignPage()" >Get Assigned Page</button> -->
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" style="background:black;">
+                    <div class="col-md-offset-1 col-md-10">
+                        <div class="row" ng-repeat="page in listPage">
+                            <div class="panel">
+                                <div class="col-md-12">
+                                    <div class="col-md-4">
+                                        <i class="fa fa-facebook-square" aria-hidden="true"></i>
+                                        <span> {{ page.name }} </span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <p>03/10/2017</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <a href="">Ngưng nhận tin nhắn</a><span> | </span><a href="">Ngắt kết nối</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </body>
