@@ -6,7 +6,9 @@ myApp.controller('myCtrl', ['$scope', 'facebookService', function($scope, facebo
     $scope.btnLogin = "Login";
     $scope.btnLogout = "Logout";
     $scope.listPage = [];
+    $scope.listPageTemp = [];
     $scope.hiddened = "";
+
     $scope.checkLoginStatus = function(){
         facebookService.checkLoginStatus().then(function(response){
             $scope.statusLogin = response.status;
@@ -29,6 +31,9 @@ myApp.controller('myCtrl', ['$scope', 'facebookService', function($scope, facebo
                         $scope.listPage = response.data;
                         $scope.checkLogin = false;
                     });
+                    
+                    console.log($scope.listPage);
+                    $("#myModal").modal("show");
                 }
                 else{
                     $scope.FBName = "Chưa đăng nhập";
@@ -75,4 +80,36 @@ myApp.controller('myCtrl', ['$scope', 'facebookService', function($scope, facebo
             console.log(response);
         });
     }
+    $scope.pictureData = {};
+    $scope.getPagePicture = function(id){
+        var picUrl = '';
+        console.log("Get picture");
+        facebookService.getPicturePage(id).then(function(response){
+            picUrl = response.data.url;
+            console.log(picUrl);
+        });
+        return picUrl;
+    };
+    
+    $scope.disconnectFB = function(){
+        console.log("Ngung ket noi");
+    };
+
+    $scope.disconnectChatFB = function(){
+        console.log("Ngung nhan tin nhan");
+    };
+
+    $scope.Open = function(){
+        $("#myModal").modal("show");
+    };
+
+    $scope.Ok = function(){
+        $("#myModal").modal("hide");
+    };
+
+    $scope.Cancel = function(){
+        $("#myModal").modal("hide");
+    };
+    
+    
 }]);

@@ -153,6 +153,18 @@ myApp.factory('facebookService',function($q) {
                 }
             );
             return deferred.promise;
-        }
+        },
+        getPicturePage : function(ID){
+            var deferred = $q.defer();
+            FB.api(
+                "/"+ ID +"/picture",
+                function (response) {
+                    if (response && !response.error) {
+                        deferred.resolve(response);
+                    }
+                }
+            );
+            return deferred.promise;
+        },
     };    
 });
