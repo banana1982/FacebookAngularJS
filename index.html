@@ -19,15 +19,15 @@
     <div ng-controller="myCtrl">
         <div class="container">
             <div class="row">
-                <h1 style="padding:auto;"><span><img class="reponsive" src='{{ imgProfileUrl }}'></span> {{ FBName }}</h1>
+                <h1 style="padding:auto;"><img class="img-circle" src='{{ imgProfileUrl }}'> <span ng-bind="FBName"></span></h1>
             </div>
             <div class="row">
                 <h4>{{ FBId }}</h4>
             </div>
             <div class="row">
                 <div class="col-md-12">
-                    <button class="btn btn-default " ng-click="FBLogin()" ng-disabled="{{ checkLogin }}">{{ btnLogin }}</button>
-                    <button class="btn btn-danger" ng-click="FBLogout()" ng-disabled="{{ checkLogin }}">{{ btnLogout }}</button>
+                    <button class="btn btn-default " ng-click="FBLogin()" ng-disabled="isLogined" ng-bind="btnLogin"></button>
+                    <button class="btn btn-danger" ng-click="FBLogout()" ng-disabled="isUnlogined">{{ btnLogout }}</button>
                     <button class="btn btn-info" ng-click="checkLoginStatus()">Check</button>
                     <button class="btn btn-default" ng-click="getPageTab()">Get Page</button>
                     <button class="btn btn-success" ng-click="getPagesList()">Get List Page</button>
@@ -44,8 +44,8 @@
                             <div class="panel">
                                 <div class="col-md-12">
                                     <div class="col-md-6">
-                                        <i class="fa fa-facebook-square" aria-hidden="true"></i>
-                                        <span> {{ page.name }} </span>
+                                        <img class="img-circle" src="{{ page.picture.data.url }}">
+                                        <span ng-bind="page.name"></span>
                                     </div>
                                     <div class="col-md-2">
                                         <p>03/10/2017</p>
@@ -66,22 +66,23 @@
                                 <strong><h4>Chọn Facebook Fanpage</h4></strong>
                             </div>
                             <div class="modal-body" ng-repeat="page in listPage">
-                                <div class="row" >
-                                    <div class="col-md-12">
-                                        <div class="col-md-8">
-                                            <!-- <img src="getPagePicture('{{ page.id }}')" alt=""> -->
-                                            <i class="fa fa-facebook-square" aria-hidden="true"></i>
-                                            <span> {{ page.name }} </span>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <a ng-click="">Xem</a>
-                                        </div>
-                                        <div class="col-md-2">
-                                            <button class="btn btn-info" ng-click="">Chọn</button>
+                                <div>
+                                    <div class="row" style="height:80px;">
+                                        <div class="col-md-12">
+                                            <div class="col-md-8">
+                                                <img class="img-circle" src="{{ page.picture.data.url }}">
+                                                <span ng-bind="page.name"></span>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button class="btn btn-link" ng-click="">Xem</a>
+                                            </div>
+                                            <div class="col-md-2">
+                                                <button class="btn btn-info" ng-click="">Chọn</button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <hr>
+                                    <hr>
+                                </div>   
                             </div>
                             <!-- <div class="modal-footer">
                                 <button class="btn btn-success" ng-click="Ok()">Okay</button>

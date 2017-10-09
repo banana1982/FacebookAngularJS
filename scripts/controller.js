@@ -1,5 +1,6 @@
 myApp.controller('myCtrl', ['$scope', 'facebookService', function($scope, facebookService){
-    $scope.checkLogin = false;
+    $scope.isLogined = false;
+    $scope.isUnlogined = !$scope.isLogined;
     $scope.imgProfileUrl = "";
     $scope.FBName = "";
     $scope.FBId = "";
@@ -8,6 +9,7 @@ myApp.controller('myCtrl', ['$scope', 'facebookService', function($scope, facebo
     $scope.listPage = [];
     $scope.listPageTemp = [];
     $scope.hiddened = "";
+    $scope.pictureData = [];
 
     $scope.checkLoginStatus = function(){
         facebookService.checkLoginStatus().then(function(response){
@@ -16,33 +18,33 @@ myApp.controller('myCtrl', ['$scope', 'facebookService', function($scope, facebo
         });
     };
     $scope.FBLogin = function(){
-        $scope.checkLogin = true;
         facebookService.FBLogin().then(function(response){
             if(response.status){
                 if(response.info.uname !== "" && response.status){
                     $scope.FBName = "Chào " + response.info.uname;
-                    $scope.checkLogin = response.status;
+                    $scope.isLogined = response.status;
                     $scope.FBId = response.info.uid;
                     var ID =response.info.uid;
+                    var picUrl = "";
                     facebookService.getPictureProfile(ID).then(function(response){
-                        $scope.imgProfileUrl = response.data.url; 
+                        $scope.imgProfileUrl = response.data.url;
+                        facebookService.getPagesList().then(function(response){
+                            $scope.listPage = response.data;
+                            $scope.isLogined = false;
+                        });
                     });
-                    facebookService.getPagesList().then(function(response){
-                        $scope.listPage = response.data;
-                        $scope.checkLogin = false;
-                    });
-                    
                     console.log($scope.listPage);
-                    $("#myModal").modal("show");
+                    $scope.isLogined = true;
+                    $("#myModal").modal("show");    
                 }
                 else{
                     $scope.FBName = "Chưa đăng nhập";
-                    $scope.checkLogin = false;
+                    $scope.isLogined = false;
                 }
             }
             else{
                 $scope.FBName = "Lỗi đăng nhập";
-                $scope.checkLogin = false;
+                $scope.isLogined = false;
             }
         });
     };
@@ -80,13 +82,12 @@ myApp.controller('myCtrl', ['$scope', 'facebookService', function($scope, facebo
             console.log(response);
         });
     }
-    $scope.pictureData = {};
-    $scope.getPagePicture = function(id){
+    $scope.getPagePicture = function(ID){
         var picUrl = '';
+        var PID = ID;
         console.log("Get picture");
-        facebookService.getPicturePage(id).then(function(response){
+        facebookService.getPicturePage(PID).then(function(response){
             picUrl = response.data.url;
-            console.log(picUrl);
         });
         return picUrl;
     };

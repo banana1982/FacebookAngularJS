@@ -37,7 +37,7 @@ myApp.factory('facebookService',function($q) {
         },
         getPagesList: function() {
             var deferred = $q.defer();
-            FB.api('/me/accounts', {
+            FB.api('/me/accounts?fields=access_token,id,picture,category,name,perms', {
                     scope: 'pages_show_list',
                     auth_type: 'request'
             }, function(response) {
@@ -54,7 +54,7 @@ myApp.factory('facebookService',function($q) {
                         status:true,
                         message:"GET_LIST_PAGE_SUCCESSFUL",
                         data: response.data,
-                        paging:response.paging
+                        paging:response.paging,
                     };
                     deferred.resolve(pages);
                 }
@@ -161,6 +161,7 @@ myApp.factory('facebookService',function($q) {
                 function (response) {
                     if (response && !response.error) {
                         deferred.resolve(response);
+                        console.log(response);
                     }
                 }
             );

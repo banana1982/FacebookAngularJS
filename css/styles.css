@@ -1,8 +1,15 @@
 .row {
-    padding:10px;
+    display: inline ;
+    padding:auto;
     margin: auto;
+}
+hr {
+    margin: 0px;
 }
 .panel {
     padding: 20px;
-    height:60px;
+    height:80px;
+}
+.ng-scope{
+    position: relative;
 }
